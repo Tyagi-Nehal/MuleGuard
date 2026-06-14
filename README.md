@@ -2,12 +2,6 @@
 
 ### Real-Time UPI Micro-Structuring & Mule Account Detection using Graph Neural Networks
 
-![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)
-![PyTorch](https://img.shields.io/badge/PyTorch_Geometric-GNN-orange?style=flat-square&logo=pytorch)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green?style=flat-square&logo=fastapi)
-![React](https://img.shields.io/badge/React-Dashboard-61DAFB?style=flat-square&logo=react)
-![Docker](https://img.shields.io/badge/Docker-Deployed-2496ED?style=flat-square&logo=docker)
-
 
 ---
 
