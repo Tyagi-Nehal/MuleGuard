@@ -190,7 +190,9 @@ Open `http://localhost:3000` in your browser.
 ## Status
 Work in progress
 
-## 👨‍💻 Author
+---
+
+##  Author
 
 **Nehal Tyagi**
 Final Year B.Tech — Information Technology
