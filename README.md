@@ -192,8 +192,4 @@ Work in progress
 Final Year B.Tech — Information Technology
 Manipal Institute of Technology, Bengaluru
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Nehal_Tyagi-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/nehaltyagi/)
-[![GitHub](https://img.shields.io/badge/GitHub-Tyagi--Nehal-black?style=flat-square&logo=github)](https://github.com/Tyagi-Nehal)
 
-
-*Built as a Final Year Minor Specialization Project — Manipal Institute of Technology Bengaluru, 2025–26*
