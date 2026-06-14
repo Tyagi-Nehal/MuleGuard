@@ -7,11 +7,11 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green?style=flat-square&logo=fastapi)
 ![React](https://img.shields.io/badge/React-Dashboard-61DAFB?style=flat-square&logo=react)
 ![Docker](https://img.shields.io/badge/Docker-Deployed-2496ED?style=flat-square&logo=docker)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+
 
 ---
 
-## 🚨 The Problem
+##  The Problem
 
 India's UPI network processed **18.68 billion transactions in May 2025 alone**. Fraudsters exploit this scale using a technique called **micro-structuring** — breaking large stolen sums into hundreds of tiny transactions under ₹500, routed through networks of fake "mule" accounts to evade detection.
 
@@ -22,7 +22,7 @@ A ₹300 payment always looks innocent in isolation. But when 200 fake accounts 
 
 ---
 
-## 💡 What MuleGuard Does
+##  What MuleGuard Does
 
 MuleGuard steps back and looks at the **entire network** of who is sending money to whom — not individual transactions.
 
@@ -34,7 +34,7 @@ MuleGuard steps back and looks at the **entire network** of who is sending money
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```
 UPI Transaction Data
@@ -72,7 +72,7 @@ UPI Transaction Data
 
 ---
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -88,7 +88,7 @@ UPI Transaction Data
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 muleguard/
@@ -114,7 +114,7 @@ muleguard/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Python 3.11
@@ -159,7 +159,7 @@ Open `http://localhost:3000` in your browser.
 
 ---
 
-## 📊 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -169,7 +169,7 @@ Open `http://localhost:3000` in your browser.
 
 ---
 
-## 🎯 Evaluation Targets
+##  Evaluation Targets
 
 - AUC-ROC **> 0.88** on held-out test graph
 - Inference latency **< 200ms** per batch
@@ -178,7 +178,7 @@ Open `http://localhost:3000` in your browser.
 
 ---
 
-## 📚 Research References
+##  Research References
 
 1. Worldpay from FIS. *Are microtransactions the next big thing in digital payments?* Worldpay Insights, 2022.
 2. Moody, K. *Exploring the Role of Microtransactions in the Video Game Industry.* University of Virginia, 2024.
@@ -186,6 +186,9 @@ Open `http://localhost:3000` in your browser.
 4. FiosCompliance. *Inside India's UPI Fraud Surge: A Silent Enabler of Illicit Finance*, 2025.
 
 ---
+
+## Status
+Work in progress
 
 ## 👨‍💻 Author
 
