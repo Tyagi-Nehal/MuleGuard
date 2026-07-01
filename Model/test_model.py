@@ -5,35 +5,37 @@ from torch_geometric.nn import GCNConv
 from torch.nn import Linear
 
 # -------------------------------------------------------------------------
-# WEEK 3 BONUS: TEST THE TRAINED MODEL
-# -------------------------------------------------------------------------
-# This script loads your already-trained model and runs it on the FULL
-# dataset, then shows you exactly which accounts it flags as fraud -
-# so you can manually verify it's catching the right ones.
+# TEST THE TRAINED MODEL  (Final version — 11 features)
 # -------------------------------------------------------------------------
 
 FEATURE_NAMES = [
-    'in_degree', 'out_degree', 'total_received', 'total_sent',
-    'avg_received', 'time_span_minutes', 'unique_senders_ratio',
-    'burst_score', 'low_amount_clustering'
+    'in_degree',
+    'out_degree',
+    'total_received',
+    'total_sent',
+    'avg_received',
+    'time_span_minutes',
+    'unique_senders_ratio',
+    'burst_score',
+    'low_amount_clustering',
+    'fan_in_fan_out_ratio',
+    'neighbor_freshness_score',
 ]
 
 
-# This class definition must be IDENTICAL to the one in train_gnn.py -
-# PyTorch needs to know the model's "shape" before it can load the saved weights.
 class MuleGuardGCN(torch.nn.Module):
     def __init__(self, num_features, hidden_channels=16):
         super().__init__()
-        self.conv1 = GCNConv(num_features, hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, hidden_channels)
+        self.conv1      = GCNConv(num_features, hidden_channels)
+        self.conv2      = GCNConv(hidden_channels, hidden_channels)
         self.classifier = Linear(hidden_channels, 2)
 
     def forward(self, x, edge_index):
-        x = self.conv1(x, edge_index)
-        x = F.relu(x)
-        x = F.dropout(x, p=0.3, training=self.training)
-        x = self.conv2(x, edge_index)
-        x = F.relu(x)
+        x   = self.conv1(x, edge_index)
+        x   = F.relu(x)
+        x   = F.dropout(x, p=0.3, training=self.training)
+        x   = self.conv2(x, edge_index)
+        x   = F.relu(x)
         out = self.classifier(x)
         return out
 
@@ -45,17 +47,16 @@ def load_graph(path='model/transaction_graph.pkl'):
 
 
 def graph_to_features(G, node_list):
-    """Same conversion logic as training - must match exactly."""
     feature_rows = []
     for node in node_list:
         node_data = G.nodes[node]
         row = [node_data.get(feat, 0.0) for feat in FEATURE_NAMES]
         feature_rows.append(row)
-    x = torch.tensor(feature_rows, dtype=torch.float)
 
+    x      = torch.tensor(feature_rows, dtype=torch.float)
     x_mean = x.mean(dim=0, keepdim=True)
-    x_std = x.std(dim=0, keepdim=True) + 1e-8
-    x = (x - x_mean) / x_std
+    x_std  = x.std(dim=0, keepdim=True) + 1e-8
+    x      = (x - x_mean) / x_std
 
     node_to_idx = {node: idx for idx, node in enumerate(node_list)}
     sources, targets = [], []
@@ -70,59 +71,61 @@ def graph_to_features(G, node_list):
 def run_inference(model_path='model/muleguard_gnn.pt', top_n=15):
     print("--- Loading trained MuleGuard model ---")
     checkpoint = torch.load(model_path, weights_only=False)
-    node_list = checkpoint['node_list']
-    metrics = checkpoint['metrics']
+    node_list  = checkpoint['node_list']
+    metrics    = checkpoint['metrics']
 
-    print(f"Model was trained with: Accuracy {metrics['accuracy']:.2%} | "
-          f"Precision {metrics['precision']:.2%} | Recall {metrics['recall']:.2%}")
+    print(f"Trained with: Accuracy {metrics['accuracy']:.2%} | "
+          f"Precision {metrics['precision']:.2%} | "
+          f"Recall {metrics['recall']:.2%} | "
+          f"F1 {metrics['f1']:.2%}")
 
-    # Rebuild the same graph + features used during training
     G = load_graph()
     x, edge_index = graph_to_features(G, node_list)
 
-    # Rebuild the model "shape" and load the trained weights into it
     model = MuleGuardGCN(num_features=x.shape[1])
     model.load_state_dict(checkpoint['model_state_dict'])
-    model.eval()  # switches off dropout - we want the model's best, final answer now
+    model.eval()
 
-    print(f"\n--- Running the model on all {len(node_list)} accounts ---")
+    print(f"\n--- Running on all {len(node_list)} accounts ---")
     with torch.no_grad():
-        out = model(x, edge_index)
-        probs = F.softmax(out, dim=1)  # converts raw scores into 0-1 probabilities
-        fraud_probs = probs[:, 1]      # column 1 = probability of being fraud
+        out         = model(x, edge_index)
+        probs       = F.softmax(out, dim=1)
+        fraud_probs = probs[:, 1]
 
-    # Pair each account with its fraud probability, sort highest first
     results = list(zip(node_list, fraud_probs.tolist()))
     results.sort(key=lambda x: x[1], reverse=True)
 
-    print(f"\n--- Top {top_n} accounts the model considers MOST suspicious ---\n")
+    print(f"\n--- Top {top_n} most suspicious accounts ---\n")
     for rank, (account, prob) in enumerate(results[:top_n], 1):
-        flag = "🚩 FLAGGED AS FRAUD" if prob >= 0.5 else "   (below threshold)"
-        print(f"{rank:2d}. {account:<40s}  fraud probability: {prob:.1%}   {flag}")
+        flag = "🚩 FRAUD" if prob >= 0.5 else "  (normal)"
+        bar  = "█" * int(prob * 20)
+        print(f"{rank:2d}. {account:<42s}  {prob:.1%}  {bar}  {flag}")
 
-    # Cross-check against the ACTUAL fraud labels you know from Week 1
-    actual_fraud_accounts = set()
+    # Cross-check against real fraud labels from Week 1
+    actual_fraud = set()
     for node in G.nodes():
-        for _, _, data in G.in_edges(node, data=True):
-            if data.get('is_fraud') == 1:
-                actual_fraud_accounts.add(node)
-        for _, _, data in G.out_edges(node, data=True):
-            if data.get('is_fraud') == 1:
-                actual_fraud_accounts.add(node)
+        for _, _, d in G.in_edges(node, data=True):
+            if d.get('is_fraud') == 1:
+                actual_fraud.add(node)
+        for _, _, d in G.out_edges(node, data=True):
+            if d.get('is_fraud') == 1:
+                actual_fraud.add(node)
 
-    flagged_accounts = set(acc for acc, prob in results if prob >= 0.5)
-    correctly_caught = flagged_accounts & actual_fraud_accounts
-    missed = actual_fraud_accounts - flagged_accounts
-    false_alarms = flagged_accounts - actual_fraud_accounts
+    flagged        = set(acc for acc, prob in results if prob >= 0.5)
+    caught         = flagged & actual_fraud
+    missed         = actual_fraud - flagged
+    false_alarms   = flagged - actual_fraud
 
-    print(f"\n--- Sanity check against known fraud labels ---")
-    print(f"Total accounts flagged by model: {len(flagged_accounts)}")
-    print(f"Correctly caught real fraud accounts: {len(correctly_caught)}")
-    print(f"Missed fraud accounts: {len(missed)}")
-    print(f"False alarms (flagged but actually normal): {len(false_alarms)}")
+    print(f"\n--- Sanity check ---")
+    print(f"Total accounts flagged:          {len(flagged)}")
+    print(f"Real fraud accounts caught:      {len(caught)} / {len(actual_fraud)}")
+    print(f"Missed (slipped through):        {len(missed)}")
+    print(f"False alarms (normal, flagged):  {len(false_alarms)}")
 
     if missed:
-        print(f"\nMissed accounts (model failed to flag these): {list(missed)[:5]}")
+        print(f"\nMissed accounts: {list(missed)[:5]}")
+    if false_alarms:
+        print(f"\nSample false alarms: {list(false_alarms)[:3]}")
 
 
 if __name__ == "__main__":
